@@ -37,7 +37,6 @@ $assocArray['balance'] = ''.$roller.'';
 $jsondata = json_encode($assocArray);
 
 //finally, echo result of the work.
-header('Access-Control-Allow-Origin: *');
-header('Content-Type: application/json;charset=utf-8');
+
 echo $jsondata;
 ?>
