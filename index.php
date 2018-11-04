@@ -35,7 +35,14 @@ $assocArray['balance'] = ''.$roller.'';
 
 if($tx){
 	$gettx = $ethc->eth_getTransactionByHash($tx);
-	print_r($gettx);
+	$assocArray['tx'] = [
+		"status" => ($gettx->to == $addr ? "success" : "error"),
+		"amount" => number_format((hexdec($gettx->value)/1000000000000000000), 10, ".", ""),
+		"form" => $gettx->from,
+		"to" => $gettx->to,
+		"blockNumber" => hexdec($gettx->blockNumber)
+	];
+	
 }
 
 //print_r($assocArray);
