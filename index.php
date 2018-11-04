@@ -19,7 +19,7 @@ $ethc = new Ethereum('http://127.0.0.1', 8545);
 //if passed, capture wallet id
 $addr = $_REQUEST['wallet'];
 $tx = $_REQUEST["tx"];
-
+$amount = $_REQUEST["amount"];
 //get balance
 $dec = $ethc->eth_getBalance($addr, "latest");
 
@@ -35,9 +35,10 @@ $assocArray['balance'] = ''.$roller.'';
 
 if($tx){
 	$gettx = $ethc->eth_getTransactionByHash($tx);
+	$amountIn = number_format((hexdec($gettx->value)/1000000000000000000), 10, ".", "");
 	$assocArray['tx'] = [
-		"status" => ($gettx->to == $addr ? "success" : "error"),
-		"amount" => number_format((hexdec($gettx->value)/1000000000000000000), 10, ".", ""),
+		"status" => ($gettx->to == $addr && $amount ==  $amountIn ? "success" : "error"),
+		"amount" => $amountIn,
 		"form" => $gettx->from,
 		"to" => $gettx->to,
 		"blockNumber" => hexdec($gettx->blockNumber)
