@@ -10,10 +10,10 @@ if ( strlen($_REQUEST['wallet']) != "42" ) { echo "wallet should be 42 char, inc
 require 'ethereum-php/ethereum.php';
 //create object
 //pirls official rpc server, made for things like this
-$ethc = new Ethereum('https://node.roller.today/', '80');
+//$ethc = new Ethereum('https://node.roller.today/', '80');
 
 //use this if your running a local pirl node (be sure to start it up with --rpc after the command)
-#$ethc = new Ethereum('127.0.0.1', 8545);
+$ethc = new Ethereum('127.0.0.1', 8545);
 
 //if passed, capture wallet id
 $addr = $_REQUEST['wallet'];
