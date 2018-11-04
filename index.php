@@ -13,7 +13,7 @@ require 'ethereum-php/ethereum.php';
 //$ethc = new Ethereum('https://node.roller.today/', '80');
 
 //use this if your running a local pirl node (be sure to start it up with --rpc after the command)
-$ethc = new Ethereum('127.0.0.1', 8545);
+$ethc = new Ethereum('http://127.0.0.1', 8545);
 
 //if passed, capture wallet id
 $addr = $_REQUEST['wallet'];
@@ -37,6 +37,7 @@ $assocArray['balance'] = ''.$roller.'';
 $jsondata = json_encode($assocArray);
 
 //finally, echo result of the work.
-
+header('Access-Control-Allow-Origin: *');
+header('Content-Type: application/json;charset=utf-8');
 echo $jsondata;
 ?>
