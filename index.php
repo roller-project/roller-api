@@ -1,6 +1,6 @@
 <?php
 //created by phatblinkie to help with a simple query for scripts to access
-error_reporting(0);
+error_reporting(1);
 
 //pass some simple sanity checks
 if ( $_REQUEST['wallet'] == "" ) {echo "url should be in format http://api.roller.today/?wallet=0xasdfjasdlkjasdflkj"; exit;}
