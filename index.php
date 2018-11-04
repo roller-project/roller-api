@@ -21,7 +21,7 @@ $addr = $_REQUEST['wallet'];
 
 //get balance
 $dec = $ethc->eth_getBalance($addr, "latest");
-print_r($addr);
+
 //convert from hex to dev, then to human type numbers
 // 10 decimal spots, with a period, no thousands separator  = 1119.8800567580
 
