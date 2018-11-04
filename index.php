@@ -1,6 +1,6 @@
 <?php
 error_reporting(E_ALL);
-ini_set('display_errors', '1');
+ini_set('display_errors', '0');
 
 
 //pass some simple sanity checks
@@ -18,6 +18,7 @@ $ethc = new Ethereum('http://127.0.0.1', 8545);
 
 //if passed, capture wallet id
 $addr = $_REQUEST['wallet'];
+$tx = $_REQUEST["tx"];
 
 //get balance
 $dec = $ethc->eth_getBalance($addr, "latest");
@@ -31,6 +32,11 @@ $roller = number_format((hexdec($dec)/1000000000000000000), 10, ".", "");
 $assocArray = array();
 $assocArray['wallet'] = ''.$addr.'';
 $assocArray['balance'] = ''.$roller.'';
+
+if($tx){
+	$gettx = $ethc->eth_getTransactionByHash($tx);
+	print_r($gettx);
+}
 
 //print_r($assocArray);
 
