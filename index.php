@@ -1,20 +1,17 @@
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', '0');
-
+require __DIR__.'/vendor/autoload.php';
 
 //pass some simple sanity checks
 if ( $_REQUEST['wallet'] == "" ) {echo "url should be in format http://api.roller.today/?wallet=0xasdfjasdlkjasdflkj"; exit;}
 if ( strlen($_REQUEST['wallet']) != "42" ) { echo "wallet should be 42 char, including the 0x beginning"; exit;}
 
 //include ethereum php library
-require 'ethereum-php/ethereum.php';
-//create object
-//pirls official rpc server, made for things like this
-//$ethc = new Ethereum('https://node.roller.today/', '80');
+require __DIR__.'/roller-lib/EthereumRPC.php';
 
-//use this if your running a local pirl node (be sure to start it up with --rpc after the command)
-$ethc = new Ethereum('http://127.0.0.1', 8545);
+
+$ethc = new EthereumRPC('http://127.0.0.1', 8545);
 
 //if passed, capture wallet id
 $addr = $_REQUEST['wallet'];

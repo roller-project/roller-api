@@ -8,14 +8,27 @@
  */
 
 require_once(dirname(__FILE__).'/json-rpc.php');
-
-class Ethereum extends JSON_RPC
+require_once(dirname(__FILE__).'/units.php');
+class EthereumRPC extends JSON_RPC
 {
+
+	public  $unit = [];
+    
+    private $units;
+    function __construct($host, $port, $username=null, $password=null, $version="2.0")
+	{
+		parent::__construct($host, $port, $username, $password);
+		$this->units = new Uints;
+		$this->unit = $this->units->unit;
+	}
+
+
 	private function ether_request($method, $params=array())
 	{
 		try 
 		{
 			$ret = $this->request($method, $params);
+
 			return $ret->result;
 		}
 		catch(RPCException $e) 
@@ -24,7 +37,7 @@ class Ethereum extends JSON_RPC
 		}
 	}
 	
-	private function decode_hex($input)
+	function decode_hex($input)
 	{
 		if(substr($input, 0, 2) == '0x')
 			$input = substr($input, 2);
@@ -35,6 +48,42 @@ class Ethereum extends JSON_RPC
 		return $input;
 	}
 	
+	/*
+	Validate Address
+	*/
+	function isAddress($value)
+    {
+        if (!is_string($value)) {
+            throw new InvalidArgumentException('The value to isAddress function must be string.');
+        }
+        if (preg_match('/^(0x|0X)?[a-f0-9A-F]{40}$/', $value) !== 1) {
+
+            return false;
+        } elseif (preg_match('/^(0x|0X)?[a-f0-9]{40}$/', $value) === 1 || preg_match('/^(0x|0X)?[A-F0-9]{40}$/', $value) === 1) {
+            return true;
+        }
+        return $value;
+    }
+
+
+    function isHex($value)
+    {
+        return (is_string($value) && preg_match('/^(0x)?[a-f0-9]*$/', $value) === 1);
+    }
+
+    function toEther($value, $unit="ether"){
+    	return sprintf('%.16f',($value/$this->unit[$unit]));
+    }
+
+    function toWei($value, $unit="ether"){
+    	return (int)sprintf('%.0f',$value * $this->unit[$unit]);
+    }
+
+
+    /*
+	Ethere
+    */
+
 	function web3_clientVersion()
 	{
 		return $this->ether_request(__FUNCTION__);
@@ -55,9 +104,13 @@ class Ethereum extends JSON_RPC
 		return $this->ether_request(__FUNCTION__);
 	}
 	
-	function net_peerCount()
+	function net_peerCount($decode_hex=FALSE)
 	{
-		return $this->ether_request(__FUNCTION__);
+		$peer = $this->ether_request(__FUNCTION__);
+		if($decode_hex)
+			$peer = $this->decode_hex($peer);
+		
+		return $peer;
 	}
 	
 	function eth_protocolVersion()
@@ -135,6 +188,10 @@ class Ethereum extends JSON_RPC
 		return $this->ether_request(__FUNCTION__, array($tx));
 	}
 	
+	
+
+	
+
 	function eth_getUncleCountByBlockHash($block_hash)
 	{
 		return $this->ether_request(__FUNCTION__, array($block_hash));
@@ -155,6 +212,101 @@ class Ethereum extends JSON_RPC
 		return $this->ether_request(__FUNCTION__, array($address, $input));
 	}
 	
+	/*
+	Personal Account
+	*/
+	function unlockAccount($address,$password, $time=3600){
+		try 
+		{
+			return $this->ether_request('personal_unlockAccount', array($address, $password, $time));
+		}catch(RPCException $e) 
+		{
+			return false;
+		}
+	}
+
+
+	function lockAccount($address){
+		try 
+		{
+			return $this->ether_request('personal_lockAccount', array($address));
+		}catch(RPCException $e) 
+		{
+			return false;
+		}
+	}
+
+	function newAccount($password){
+		if(empty($password)) return "Password Empty";
+		try 
+		{
+			return $this->ether_request('personal_newAccount', array($password));
+		}catch(RPCException $e) 
+		{
+			return false;
+		}
+	}
+
+	function listAccounts(){
+		try 
+		{
+			return $this->ether_request('personal_listAccounts', array());
+		}catch(RPCException $e) 
+		{
+			return false;
+		}
+	}
+
+	function personal_sendTransaction($transaction, $password)
+	{
+		if(!is_a($transaction, 'Transaction_OutBalance'))
+		{
+			throw new ErrorException('Transaction object expected');
+		}
+		else
+		{
+
+			return $this->ether_request(__FUNCTION__, array($transaction->toArray(), $password));	
+		}
+	}
+
+	function toHex($value){
+		return $this->units->toHex($value, true);
+	}
+
+	function sendMany($from, $to, $value, $gas='21000')
+	{
+		
+
+		$value = sprintf('%.0f', (int)$value) * 1000000000000000000;
+		//print_r($value);exit();
+		$fromAddress = @array_pop(array_keys($from));
+		$password = @array_pop(array_values($from));
+
+		$gasPrice = $this->eth_gasPrice();
+		
+		
+		$gasPriceDecode = $this->decode_hex($gasPrice);
+		$valueSend = number_format(($value - ($gas * $gasPriceDecode) - 100000),0,"","");
+		
+		$transaction = "";
+		
+		$transaction = new Transaction_OutBalance($fromAddress, $to, $this->toHex($gas), $gasPrice, $this->toHex($valueSend));
+		
+		$tx = $this->personal_sendTransaction($transaction, $password);
+		return $tx;
+	}
+
+
+	
+	/*
+	Update Geth v3
+	Support Atix
+	*/
+
+
+	
+
 	function eth_sendTransaction($transaction)
 	{
 		if(!is_a($transaction, 'Ethereum_Transaction'))
@@ -190,6 +342,8 @@ class Ethereum extends JSON_RPC
 			return $this->ether_request(__FUNCTION__, $message->toArray());
 		}
 	}
+
+
 	
 	function eth_getBlockByHash($hash, $full_tx=TRUE)
 	{
@@ -424,6 +578,44 @@ class Ethereum_Transaction
 				'data'=>$this->data,
 				'nonce'=>$this->nonce
 			)
+		);
+	}
+}
+
+/*
+	Personal_Transaction Object
+*/
+
+/**
+ * 
+ */
+class Transaction_OutBalance
+{
+	private $to, $from, $gas, $gasPrice, $value, $data, $nonce;
+	
+	function __construct($from, $to, $gas, $gasPrice, $value, $data='', $nonce=NULL)
+	{
+		$this->from = $from;
+		$this->to = $to;
+		$this->gas = $gas;
+		$this->gasPrice = $gasPrice;
+		$this->value = $value;
+		$this->data = $data;
+		$this->nonce = $nonce;
+	}
+	
+	function toArray()
+	{
+		return array(
+			
+				'from'=>$this->from,
+				'to'=>$this->to,
+				'gas'=> $this->gas,
+				'gasPrice'=> $this->gasPrice,
+				'value'=> $this->value,
+				'data'=>$this->data,
+				'nonce'=>$this->nonce
+			
 		);
 	}
 }

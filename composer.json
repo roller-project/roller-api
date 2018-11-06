@@ -1,0 +1,28 @@
+{
+	"description": "The Roller API framework",
+	"name": "Roller API",
+	"type": "project",
+	"homepage": "https://roller.today",
+	"license": "MIT",
+	"support": {
+		"forum": "https://roller.today/",
+		"wiki": "https://document.smarts.exchange",
+		"source": "https://github.com/roller-project/roller-api"
+	},
+	"require": {
+		
+        "PHP": "^7.1",
+		"phpseclib/phpseclib": "~2.0",
+		
+	},
+	"autoload": {
+        
+	},
+	"suggest": {
+		"paragonie/random_compat": "Provides better randomness in PHP 5.x"
+	},
+	"require-dev": {
+		"mikey179/vfsStream": "1.1.*",
+		"phpunit/phpunit": "~6.0"
+	}
+}
