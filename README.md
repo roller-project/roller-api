@@ -1,7 +1,7 @@
 # Roller API
 Install
 
-composer install
+	composer install
 
 Include class
 
@@ -14,6 +14,7 @@ Connect
 
 Run Geth API Support
 	geth --rpc --rpcapi="net,web3,eth"
+	
 If you want create wallet access wallet
 	geth --rpc --rpcapi="net,web3,eth,personal"
 
