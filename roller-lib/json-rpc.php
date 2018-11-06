@@ -9,10 +9,12 @@ class JSON_RPC
 	protected $host, $port, $version;
 	protected $id = 0;
 	
-	function __construct($host, $port, $version="2.0")
+	function __construct($host, $port, $username=null, $password=null, $version="2.0")
 	{
 		$this->host = $host;
 		$this->port = $port;
+		$this->username = $username;
+		$this->password = $password;
 		$this->version = $version;
 	}
 	
@@ -23,11 +25,17 @@ class JSON_RPC
 		$data['id'] = $this->id++;
 		$data['method'] = $method;
 		$data['params'] = $params;
-		
+
 		$ch = curl_init();
 		
+
 		curl_setopt($ch, CURLOPT_URL, $this->host);
 		curl_setopt($ch, CURLOPT_PORT, $this->port);
+		if($this->username && $this->password){
+		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+		curl_setopt($ch, CURLOPT_USERPWD, $this->username . ':' . $this->password); 
+		} 
+
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
 		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json')); 
 		curl_setopt($ch, CURLOPT_POST, TRUE);
